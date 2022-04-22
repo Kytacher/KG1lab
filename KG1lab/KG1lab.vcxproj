@@ -140,6 +140,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="KG1lab.cpp" />
+    <ClCompile Include="Pipeline.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Pipeline.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
