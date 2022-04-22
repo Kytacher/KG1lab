@@ -108,7 +108,7 @@
 	glutSwapBuffers();
 }
   ```
-  ### 3) Код шейдера.
+  ### 2) Код шейдера.
   ```c++ 
   2 static const char* pVS = "                                                          \n\
 #version 330                                                                        \n\
