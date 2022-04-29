@@ -5,6 +5,7 @@
 #define ToDegree(x) ((x) * 180.0f / M_PI)
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include "glm/mat4x4.hpp"
 
 class Pipeline
 {
@@ -13,6 +14,11 @@ private:
     glm::vec3 worldPos;
     glm::vec3 rotateInfo;
     glm::mat4 transformation;
+    struct {
+        glm::vec3 Pos;
+        glm::vec3 Target;
+        glm::vec3 Up;
+    } m_camera;
 
 public:
     Pipeline()
@@ -41,6 +47,13 @@ public:
         rotateInfo.x = RotateX;
         rotateInfo.y = RotateY;
         rotateInfo.z = RotateZ;
+    }
+
+    void SetCamera(const glm::vec3& Pos, const glm::vec3& Target, const glm::vec3& Up)
+    {
+        m_camera.Pos = Pos;
+        m_camera.Target = Target;
+        m_camera.Up = Up;
     }
 
     const glm::mat4* getTransformation()
@@ -95,3 +108,4 @@ public:
         m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 0.0f; m[3][3] = 1.0f;
     }
 };
+

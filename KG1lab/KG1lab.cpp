@@ -6,12 +6,15 @@
 #include <list>
 #include <iostream>
 #include "Pipeline.h"
+#include "camera.h"
 #define ToRadian(x) ((x) * M_PI / 180.0f)
 #define ToDegree(x) ((x) * 180.0f / M_PI)
 
 
 GLuint VBO;
 GLuint gWorldLocation;
+
+Camera GameCamera;
 
 // инициализация шейдера
 static const char* pVS = "                                                          \n\
@@ -73,9 +76,17 @@ static void RenderSceneCB()
 
 	//создаем объект конвейера, настраиваем его и отправляем результат в шейдер.
 	Pipeline p;
-	p.Scale(sinf(sc * 0.1f), sinf(sc * 0.1f), sinf(sc * 0.1f));
 	p.WorldPos(sinf(sc), 0.0f, 0.0f);
 	p.Rotate(sinf(sc) * 90.0f, sinf(sc) * 90.0f, sinf(sc) * 90.0f);
+
+	glm::vec3 CameraPos(0.0f, 0.0f, -3.0f);
+	glm::vec3 CameraTarget(0.0f, 0.0f, 2.0f);
+	glm::vec3 CameraUp(0.0f, 1.0f, 0.0f);
+	p.SetCamera(CameraPos, CameraTarget, CameraUp);
+
+    p.SetCamera(GameCamera.GetPos(), GameCamera.GetTarget(), GameCamera.GetUp());
+
+	p.Scale(sinf(sc * 0.1f), sinf(sc * 0.1f), sinf(sc * 0.1f));
 	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)p.getTransformation());
 	//используем атрибуты вершин
 	glEnableVertexAttribArray(0);
@@ -92,6 +103,10 @@ static void RenderSceneCB()
 	glutSwapBuffers();
 }
 
+static void SpecialKeyboardCB(int Key, int x, int y)
+{
+	GameCamera.OnKeyboard(Key);
+}
 
 static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
 {
@@ -178,6 +193,7 @@ int main(int argc, char** argv)
 	//отрисовка
 	glutDisplayFunc(RenderSceneCB);
 	glutIdleFunc(RenderSceneCB);
+	glutSpecialFunc(SpecialKeyboardCB);
 	//инициализация glew
 	GLenum res = glewInit();
 	if (res != GLEW_OK)
@@ -188,7 +204,7 @@ int main(int argc, char** argv)
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	//фигурка
-	glm::vec3 Vertices[5] = {{-0.3f, -0.3f, 0.0f}, {0.3f, -0.3f, 0.0f}, {0.0f, 0.3f, 0.0f},{0.5f, -0.2f, 0.1f}, {0.1f, 0.1f, 0.4f} };
+	glm::vec3 Vertices[3] = {{-0.3f, -0.3f, 0.0f}, {0.3f, -0.3f, 0.0f}, {0.0f, 0.3f, 0.0f}};
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), &Vertices[0], GL_STATIC_DRAW);
