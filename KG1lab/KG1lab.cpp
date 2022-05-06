@@ -10,11 +10,15 @@
 #define ToRadian(x) ((x) * M_PI / 180.0f)
 #define ToDegree(x) ((x) * 180.0f / M_PI)
 
+#define WINDOW_WIDTH 1024
+#define WINDOW_HEIGHT 768
+
 
 GLuint VBO;
 GLuint gWorldLocation;
+GLuint IBO;
 
-Camera GameCamera;
+Camera* pGameCamera = NULL;
 
 // инициализация шейдера
 static const char* pVS = "                                                          \n\
@@ -47,7 +51,7 @@ static void RenderSceneCB()
 	sc += 0.001f;
 
 	// Создаем: едиинчную матрицу, матричу вращения, матрицу движения, матрицу размера и обьединяеим в итоговую матрицу result
-	glm::mat4x4 unit;
+	/*glm::mat4x4 unit;
 	unit[0][0] = 1.0f; unit[0][1] = 0.0f; unit[0][2] = 0.0f; unit[0][3] = 0.0f;
 	unit[1][0] = 0.0f; unit[1][1] = 1.0f; unit[1][2] = 0.0f; unit[1][3] = 0.0f;
 	unit[2][0] = 0.0f; unit[2][1] = 0.0f; unit[2][2] = 1.0f; unit[2][3] = 0.0f;
@@ -72,22 +76,25 @@ static void RenderSceneCB()
 	resize[3][0] = 0.0f; resize[3][1] = 0.0f; resize[3][2] = 0.0f; resize[3][3] = 1.0f;
 
 	glm::mat4x4 result = unit * rotate * move * resize;
-	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &result[0][0]);
+	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &result[0][0]); */
 
 	//создаем объект конвейера, настраиваем его и отправляем результат в шейдер.
 	Pipeline p;
 	p.WorldPos(sinf(sc), 0.0f, 0.0f);
 	p.Rotate(sinf(sc) * 90.0f, sinf(sc) * 90.0f, sinf(sc) * 90.0f);
-
-	glm::vec3 CameraPos(0.0f, 0.0f, -3.0f);
-	glm::vec3 CameraTarget(0.0f, 0.0f, 2.0f);
-	glm::vec3 CameraUp(0.0f, 1.0f, 0.0f);
-	p.SetCamera(CameraPos, CameraTarget, CameraUp);
-
-    p.SetCamera(GameCamera.GetPos(), GameCamera.GetTarget(), GameCamera.GetUp());
-
 	p.Scale(sinf(sc * 0.1f), sinf(sc * 0.1f), sinf(sc * 0.1f));
+	p.SetPerspectiveProj(60.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 100.0f);
+
+	//glm::vec3 CameraPos(0.0f, 0.0f, -3.0f);
+	//glm::vec3 CameraTarget(0.0f, 0.0f, 2.0f);
+	//glm::vec3 CameraUp(0.0f, 1.0f, 0.0f);
+	//p.SetCamera(CameraPos, CameraTarget, CameraUp);
+
+	p.SetCamera(pGameCamera->GetPos(), pGameCamera->GetTarget(), pGameCamera->GetUp());
+
 	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)p.getTransformation());
+
+
 	//используем атрибуты вершин
 	glEnableVertexAttribArray(0);
 	//привязка буфера для рисования
@@ -105,7 +112,20 @@ static void RenderSceneCB()
 
 static void SpecialKeyboardCB(int Key, int x, int y)
 {
-	GameCamera.OnKeyboard(Key);
+	pGameCamera->OnKeyboard(Key);
+}
+
+static void KeyboardCB(unsigned char Key, int x, int y)
+{
+	switch (Key) {
+	case 'q':
+		exit(0);
+	}
+}
+
+static void PassiveMouseCB(int x, int y)
+{
+	pGameCamera->OnMouse(x, y);
 }
 
 static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
@@ -140,6 +160,31 @@ static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum Shad
 	glAttachShader(ShaderProgram, ShaderObj);
 }
 
+void createVertexBuffer() {
+	glm::vec3 vertices[4];
+
+	vertices[0] = glm::vec3(-1.0f, -1.0f, 0.5773f);
+	vertices[1] = glm::vec3(0.0f, -1.0f, -1.15475f);
+	vertices[2] = glm::vec3(1.0f, -1.0f, 0.5773f);
+	vertices[3] = glm::vec3(0.0f, 1.0f, 0.0f);
+
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+}
+
+void createIndexBuffer() {
+	unsigned int indices[] = {
+			0, 3, 1,
+			1, 3, 2,
+			2, 3, 0,
+			0, 2, 1
+	};
+
+	glGenBuffers(1, &IBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+}
 
 static void CompileShaders()
 {
@@ -190,10 +235,15 @@ int main(int argc, char** argv)
 	glutInitWindowSize(600, 600);
 	glutInitWindowPosition(100, 100);
 	glutCreateWindow("Tutorial 01");
+
 	//отрисовка
 	glutDisplayFunc(RenderSceneCB);
 	glutIdleFunc(RenderSceneCB);
 	glutSpecialFunc(SpecialKeyboardCB);
+	glutPassiveMotionFunc(PassiveMouseCB);
+	glutKeyboardFunc(KeyboardCB);
+
+	pGameCamera = new Camera(1024, 728);
 	//инициализация glew
 	GLenum res = glewInit();
 	if (res != GLEW_OK)
@@ -204,10 +254,12 @@ int main(int argc, char** argv)
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	//фигурка
-	glm::vec3 Vertices[3] = {{-0.3f, -0.3f, 0.0f}, {0.3f, -0.3f, 0.0f}, {0.0f, 0.3f, 0.0f}};
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), &Vertices[0], GL_STATIC_DRAW);
+	createVertexBuffer();
+	createIndexBuffer();
+//	glm::vec3 Vertices[3] = {{-0.3f, -0.3f, 0.0f}, {0.3f, -0.3f, 0.0f}, {0.0f, 0.3f, 0.0f}};
+//	glGenBuffers(1, &VBO);
+//	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+//	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), &Vertices[0], GL_STATIC_DRAW);
     
 	CompileShaders();
 	glutMainLoop();

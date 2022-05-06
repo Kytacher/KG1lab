@@ -6,6 +6,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "glm/mat4x4.hpp"
+#include <glm/fwd.hpp>
 
 class Pipeline
 {
@@ -19,6 +20,14 @@ private:
         glm::vec3 Target;
         glm::vec3 Up;
     } m_camera;
+    struct
+    {
+        float FOV;
+        float Width;
+        float Height;
+        float zNear;
+        float zFar;
+    } m_persProj;
 
 public:
     Pipeline()
@@ -49,6 +58,15 @@ public:
         rotateInfo.z = RotateZ;
     }
 
+    void SetPerspectiveProj(float FOV, float Width, float Height, float zNear, float zFar)
+    {
+        m_persProj.FOV = FOV;
+        m_persProj.Width = Width;
+        m_persProj.Height = Height;
+        m_persProj.zNear = zNear;
+        m_persProj.zFar = zFar;
+    }
+
     void SetCamera(const glm::vec3& Pos, const glm::vec3& Target, const glm::vec3& Up)
     {
         m_camera.Pos = Pos;
@@ -58,13 +76,17 @@ public:
 
     const glm::mat4* getTransformation()
     {
-        glm::mat4 ScaleTrans, RotateTrans, TranslationTrans;
+        glm::mat4 ScaleTrans, RotateTrans, TranslationTrans, PersProjTrans;
         InitScaleTransform(ScaleTrans);
         InitRotateTransform(RotateTrans);
         InitTranslationTransform(TranslationTrans);
-        transformation = TranslationTrans * RotateTrans * ScaleTrans;
+        InitPerspectiveProj(PersProjTrans);
+
+        transformation = PersProjTrans * TranslationTrans * RotateTrans * ScaleTrans;
         return &transformation;
     }
+
+
 
     void InitScaleTransform(glm::mat4& m) const
     {
@@ -107,5 +129,21 @@ public:
         m[2][0] = 0.0f; m[2][1] = 0.0f; m[2][2] = 1.0f; m[2][3] = worldPos.z;
         m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 0.0f; m[3][3] = 1.0f;
     }
+
+    void InitPerspectiveProj(glm::mat4& m) const
+    {
+        const float ar = m_persProj.Width / m_persProj.Height;
+        const float zNear = m_persProj.zNear;
+        const float zFar = m_persProj.zFar;
+        const float zRange = zNear - zFar;
+        const float tanHalfFOV = tanf(ToRadian(m_persProj.FOV / 2.0f));
+
+        m[0][0] = 1.0f / (tanHalfFOV * ar); m[0][1] = 0.0f; m[0][2] = 0.0f; m[0][3] = 0.0f;
+        m[1][0] = 0.0f; m[1][1] = 1.0f / tanHalfFOV; m[1][2] = 0.0f; m[1][3] = 0.0f;
+        m[2][0] = 0.0f; m[2][1] = 0.0f; m[2][2] = (-zNear - zFar) / zRange; m[2][3] = 1.0f;
+        m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 2.0f * zFar * zNear / zRange; m[3][3] = 0.0f;
+    }
+
 };
+
 
