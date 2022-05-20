@@ -8,12 +8,6 @@ const static float StepScale = 0.1f;
 const static int MARGIN = 10;
 
 
-
-
-
-
-
-
 struct Quaternion
 {
     float x, y, z, w;
@@ -96,10 +90,13 @@ Camera::Camera(int WindowWidth, int WindowHeight)
     m_windowHeight = WindowHeight;
     m_pos = glm::vec3(0.0f, 0.0f, 0.0f);
     m_target = glm::vec3(0.0f, 0.0f, 1.0f);
-    const float Length = sqrtf(m_target.x * m_target.x + m_target.y * m_target.y + m_target.z * m_target.z);
-    m_target.x /= Length;
-    m_target.y /= Length;
-    m_target.z /= Length;
+    glm::normalize(m_target);
+
+ //   const float Length = sqrtf(m_target.x * m_target.x + m_target.y * m_target.y + m_target.z * m_target.z);
+ //   m_target.x /= Length;
+ //   m_target.y /= Length;
+ //   m_target.z /= Length;
+
     m_up = glm::vec3(0.0f, 1.0f, 0.0f);
 
     Init();
@@ -112,16 +109,20 @@ Camera::Camera(int WindowWidth, int WindowHeight, const glm::vec3& Pos, const gl
     m_windowHeight = WindowHeight;
     m_pos = Pos;
     m_target = Target;
-    const float Length = sqrtf(m_target.x * m_target.x + m_target.y * m_target.y + m_target.z * m_target.z);
-    m_target.x /= Length;
-    m_target.y /= Length;
-    m_target.z /= Length;
+    glm::normalize(m_target);
+
+//    const float Length = sqrtf(m_target.x * m_target.x + m_target.y * m_target.y + m_target.z * m_target.z);
+//    m_target.x /= Length;
+//    m_target.y /= Length;
+//    m_target.z /= Length;
 
     m_up = Up;
-    const float Length1 = sqrtf(m_up.x * m_up.x + m_up.y * m_up.y + m_up.z * m_up.z);
-    m_up.x /= Length1;
-    m_up.y /= Length1;
-    m_up.z /= Length1;
+    glm::normalize(m_up);
+
+//    const float Length1 = sqrtf(m_up.x * m_up.x + m_up.y * m_up.y + m_up.z * m_up.z);
+//    m_up.x /= Length1;
+//    m_up.y /= Length1;
+//    m_up.z /= Length1;
 
     Init();
 }
@@ -129,10 +130,12 @@ Camera::Camera(int WindowWidth, int WindowHeight, const glm::vec3& Pos, const gl
 void Camera::Init()
 {
     glm::vec3 HTarget(m_target.x, 0.0, m_target.z);
-    const float Length1 = sqrtf(HTarget.x * HTarget.x + HTarget.y * HTarget.y + HTarget.z * HTarget.z);
-    HTarget.x /= Length1;
-    HTarget.y /= Length1;
-    HTarget.z /= Length1;
+    glm::normalize(HTarget);
+   
+//    const float Length1 = sqrtf(HTarget.x * HTarget.x + HTarget.y * HTarget.y + HTarget.z * HTarget.z);
+//    HTarget.x /= Length1;
+//    HTarget.y /= Length1;
+//    HTarget.z /= Length1;
 
     if (HTarget.z >= 0.0f)
     {
@@ -173,7 +176,7 @@ void Camera::Init()
 bool Camera::OnKeyboard(int Key)
 {
     bool Ret = false;
-
+    
     switch (Key) {
 
     case GLUT_KEY_UP:
@@ -192,15 +195,16 @@ bool Camera::OnKeyboard(int Key)
 
     case GLUT_KEY_LEFT:
     {
-        glm::vec3 Left;
-        Left.x = m_target.y * m_up.z - m_target.z * m_up.y;
-        Left.y = m_target.z * m_up.x - m_target.x * m_up.z;
-        Left.z = m_target.x * m_up.y - m_target.y * m_up.x;
-        const float Length = sqrtf(Left.x * Left.x + Left.y * Left.y + Left.z * Left.z);
-        Left.x /= Length;
-        Left.y /= Length;
-        Left.z /= Length;
+        glm::vec3 Left = glm::cross(m_target, m_up);
 
+     //  Left.x = m_target.y * m_up.z - m_target.z * m_up.y;
+     //   Left.y = m_target.z * m_up.x - m_target.x * m_up.z;
+     //   Left.z = m_target.x * m_up.y - m_target.y * m_up.x;
+     //   const float Length = sqrtf(Left.x * Left.x + Left.y * Left.y + Left.z * Left.z);
+     //   Left.x /= Length;
+     //   Left.y /= Length;
+     //   Left.z /= Length;
+        glm::normalize(Left);
         Left *= StepScale;
         m_pos += Left;
         Ret = true;
@@ -209,15 +213,17 @@ bool Camera::OnKeyboard(int Key)
 
     case GLUT_KEY_RIGHT:
     {
-        glm::vec3 Right;
-        Right.x = m_up.y * m_target.z - m_up.z * m_target.y;
-        Right.y = m_up.z * m_target.x - m_up.x * m_target.z;
-        Right.z = m_up.x * m_target.y - m_up.y * m_target.x;
-        const float Length = sqrtf(Right.x * Right.x + Right.y * Right.y + Right.z * Right.z);
-        Right.x /= Length;
-        Right.y /= Length;
-        Right.z /= Length;
+        glm::vec3 Right = glm::cross(m_up, m_target);
 
+  //      Right.x = m_up.y * m_target.z - m_up.z * m_target.y;
+   //     Right.y = m_up.z * m_target.x - m_up.x * m_target.z;
+  //      Right.z = m_up.x * m_target.y - m_up.y * m_target.x;
+   //     const float Length = sqrtf(Right.x * Right.x + Right.y * Right.y + Right.z * Right.z);
+   //     Right.x /= Length;
+   //     Right.y /= Length;
+   //     Right.z /= Length;
+
+        glm::normalize(Right);
         Right *= StepScale;
         m_pos += Right;
         Ret = true;
@@ -226,13 +232,13 @@ bool Camera::OnKeyboard(int Key)
     }
 
 
-
-    return Ret;
+    
+    return Ret; 
 }
 
 void Camera::OnMouse(int x, int y)
 {
-    const int DeltaX = x - m_mousePos.x;
+  const int DeltaX = x - m_mousePos.x;
     const int DeltaY = y - m_mousePos.y;
 
     m_mousePos.x = x;
@@ -243,6 +249,7 @@ void Camera::OnMouse(int x, int y)
 
     if (DeltaX == 0) {
         if (x <= MARGIN) {
+        m_AngleH -= 1.0f;
             m_OnLeftEdge = true;
         }
         else if (x >= (m_windowWidth - MARGIN)) {
@@ -267,7 +274,7 @@ void Camera::OnMouse(int x, int y)
         m_OnLowerEdge = false;
     }
 
-    Update();
+    Update(); 
 }
 
 void Camera::OnRender()
@@ -325,32 +332,34 @@ void Camera::Update()
     View.y = W.y;
     View.z = W.z;
 
+    glm::normalize(View);
 
-    const float Length0 = sqrtf(View.x * View.x + View.y * View.y + View.z * View.z);
-    View.x /= Length0;
-    View.y /= Length0;
-    View.z /= Length0;
+  //  const float Length0 = sqrtf(View.x * View.x + View.y * View.y + View.z * View.z);
+ //   View.x /= Length0;
+  //  View.y /= Length0;
+  //  View.z /= Length0;
 
     // Rotate the view vector by the vertical angle around the horizontal axis
-    glm::vec3 Haxis;
-    Haxis.x = Vaxis.y * View.z - Vaxis.z * View.y;
-    Haxis.y = Vaxis.z * View.x - Vaxis.x * View.z;
-    Haxis.z = Vaxis.x * View.y - Vaxis.y * View.x;
-    const float Length = sqrtf(Haxis.x * Haxis.x + Haxis.y * Haxis.y + Haxis.z * Haxis.z);
-    Haxis.x /= Length;
-    Haxis.y /= Length;
-    Haxis.z /= Length;
+    glm::vec3 Haxis = glm::cross(Vaxis, View);
 
-    const float SinHalfAngle1 = sinf(ToRadian(m_AngleV / 2));
-    const float CosHalfAngle1 = cosf(ToRadian(m_AngleV / 2));
+ //   Haxis.x = Vaxis.y * View.z - Vaxis.z * View.y;
+ //   Haxis.y = Vaxis.z * View.x - Vaxis.x * View.z;
+  //  Haxis.z = Vaxis.x * View.y - Vaxis.y * View.x;
+  //  const float Length = sqrtf(Haxis.x * Haxis.x + Haxis.y * Haxis.y + Haxis.z * Haxis.z);
+  //  Haxis.x /= Length;
+ //   Haxis.y /= Length;
+ //   Haxis.z /= Length;
 
-    const float Rx1 = Haxis.x * SinHalfAngle1;
-    const float Ry1 = Haxis.y * SinHalfAngle1;
-    const float Rz1 = Haxis.z * SinHalfAngle1;
-    const float Rw1 = CosHalfAngle1;
+    const float SinHalfAngle11 = sinf(ToRadian(m_AngleV / 2));
+    const float CosHalfAngle11 = cosf(ToRadian(m_AngleV / 2));
+
+    const float Rx1 = Haxis.x * SinHalfAngle11;
+    const float Ry1 = Haxis.y * SinHalfAngle11;
+    const float Rz1 = Haxis.z * SinHalfAngle11;
+    const float Rw1 = CosHalfAngle11;
     Quaternion RotationQ1(Rx1, Ry1, Rz1, Rw1);
     
-    Quaternion ConjugateQ1 = RotationQ.Conjugate();
+    Quaternion ConjugateQ1 = RotationQ1.Conjugate();
     //  ConjugateQ.Normalize();
     Quaternion W1 = RotationQ1 * ConjugateQ1;
 
@@ -359,16 +368,21 @@ void Camera::Update()
     Haxis.z = W1.z;
 
     m_target = View;
-    const float Length1 = sqrtf(m_target.x * m_target.x + m_target.y * m_target.y + m_target.z * m_target.z);
-    m_target.x /= Length1;
-    m_target.y /= Length1;
-    m_target.z /= Length1;
+    glm::normalize(m_target);
+
+  //  const float Length1 = sqrtf(m_target.x * m_target.x + m_target.y * m_target.y + m_target.z * m_target.z);
+  //  m_target.x /= Length1;
+   // m_target.y /= Length1;
+   // m_target.z /= Length1;
+
+    m_up = glm::cross(m_target, Haxis);
+    glm::normalize(m_up);
     
-    m_up.x = m_target.y * Haxis.z - m_target.z * Haxis.y;
-    m_up.y = m_target.z * Haxis.x - m_target.x * Haxis.z;
-    m_up.z = m_target.x * Haxis.y - m_target.y * Haxis.x;
-    const float Length2 = sqrtf(m_up.x * m_up.x + m_up.y * m_up.y + m_up.z * m_up.z);
-    m_up.x /= Length2;
-    m_up.y /= Length2;
-    m_up.z /= Length2;
+ //   m_up.x = m_target.y * Haxis.z - m_target.z * Haxis.y;
+  //  m_up.y = m_target.z * Haxis.x - m_target.x * Haxis.z;
+  //  m_up.z = m_target.x * Haxis.y - m_target.y * Haxis.x;
+ //   const float Length2 = sqrtf(m_up.x * m_up.x + m_up.y * m_up.y + m_up.z * m_up.z);
+ //   m_up.x /= Length2;
+ //   m_up.y /= Length2;
+  //  m_up.z /= Length2;
 }

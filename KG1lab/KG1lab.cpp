@@ -1,4 +1,7 @@
 ﻿#include <stdio.h>
+#include <string.h>
+#include <assert.h>
+#include <math.h>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include "glm/vec3.hpp"
@@ -45,6 +48,7 @@ void main()                                                                     
 
 static void RenderSceneCB()
 {
+	pGameCamera->OnRender();
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	static float sc = 0.0f;
@@ -80,17 +84,24 @@ static void RenderSceneCB()
 
 	//создаем объект конвейера, настраиваем его и отправляем результат в шейдер.
 	Pipeline p;
-	p.WorldPos(sinf(sc), 0.0f, 0.0f);
-	p.Rotate(sinf(sc) * 90.0f, sinf(sc) * 90.0f, sinf(sc) * 90.0f);
-	p.Scale(sinf(sc * 0.1f), sinf(sc * 0.1f), sinf(sc * 0.1f));
-	p.SetPerspectiveProj(60.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 100.0f);
+
+	p.Scale(sinf(sc) / 2, sinf(sc * 0.5), 1.0f);
+	p.WorldPos(sinf(sc) / 2, 0.0f, 0.0f);
+	p.Rotate(-cosf(sc), sinf(sc), 1.0f);
+	p.SetCamera(pGameCamera->GetPos(), pGameCamera->GetTarget(), pGameCamera->GetUp());
+	p.SetPerspectiveProj(90.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 200.0f);
+
+//	p.WorldPos(sinf(sc), 0.0f, 0.0f);
+//	p.Rotate(sinf(sc) * 90.0f, sinf(sc) * 90.0f, sinf(sc) * 90.0f);
+//	p.Scale(sinf(sc * 0.1f), sinf(sc * 0.1f), sinf(sc * 0.1f));
+//	p.SetPerspectiveProj(60.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 100.0f);
 
 	//glm::vec3 CameraPos(0.0f, 0.0f, -3.0f);
 	//glm::vec3 CameraTarget(0.0f, 0.0f, 2.0f);
 	//glm::vec3 CameraUp(0.0f, 1.0f, 0.0f);
 	//p.SetCamera(CameraPos, CameraTarget, CameraUp);
 
-	p.SetCamera(pGameCamera->GetPos(), pGameCamera->GetTarget(), pGameCamera->GetUp());
+//	p.SetCamera(pGameCamera->GetPos(), pGameCamera->GetTarget(), pGameCamera->GetUp());
 
 	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat*)p.getTransformation());
 
@@ -102,8 +113,10 @@ static void RenderSceneCB()
 	//устанавливаем атрибуты вершин
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	//отрисовка
-	for (int i = 0; i < 10; i++)
-		glDrawArrays(GL_POLYGON, 0, i);
+	glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
+	glDisableVertexAttribArray(0);
+//	for (int i = 0; i < 10; i++)
+//		glDrawArrays(GL_POLYGON, 0, i);
 	//отключаме атрбуты вершин
 	glDisableVertexAttribArray(0);
 	//меняем местами фоновый буфер и буфер рендера местами
@@ -236,6 +249,9 @@ int main(int argc, char** argv)
 	glutInitWindowPosition(100, 100);
 	glutCreateWindow("Tutorial 01");
 
+//	glutGameModeString("1280x1024@32");
+//	glutEnterGameMode();
+
 	//отрисовка
 	glutDisplayFunc(RenderSceneCB);
 	glutIdleFunc(RenderSceneCB);
@@ -243,7 +259,7 @@ int main(int argc, char** argv)
 	glutPassiveMotionFunc(PassiveMouseCB);
 	glutKeyboardFunc(KeyboardCB);
 
-	pGameCamera = new Camera(1024, 728);
+	pGameCamera = new Camera(600, 600);
 	//инициализация glew
 	GLenum res = glewInit();
 	if (res != GLEW_OK)

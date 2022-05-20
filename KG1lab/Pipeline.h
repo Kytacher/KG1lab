@@ -76,13 +76,22 @@ public:
 
     const glm::mat4* getTransformation()
     {
-        glm::mat4 ScaleTrans, RotateTrans, TranslationTrans, PersProjTrans;
+        glm::mat4 ScaleTrans, RotateTrans, TranslationTrans, PersProjTrans, CameraRotateTrans, CameraTranslationTrans;
         InitScaleTransform(ScaleTrans);
         InitRotateTransform(RotateTrans);
         InitTranslationTransform(TranslationTrans);
+        InitTranslationTransformCam(CameraTranslationTrans);
+        InitCameraTransform(CameraRotateTrans);
         InitPerspectiveProj(PersProjTrans);
 
-        transformation = PersProjTrans * TranslationTrans * RotateTrans * ScaleTrans;
+ //       ScaleTrans.InitScaleTransform(m_scale.x, m_scale.y, m_scale.z);
+ //       RotateTrans.InitRotateTransform(m_rotateInfo.x, m_rotateInfo.y, m_rotateInfo.z);
+  //      TranslationTrans.InitTranslationTransform(m_worldPos.x, m_worldPos.y, m_worldPos.z);
+ //       CameraTranslationTrans.InitTranslationTransform(-m_camera.Pos.x, -m_camera.Pos.y, -m_camera.Pos.z);
+ //       CameraRotateTrans.InitCameraTransform(m_camera.Target, m_camera.Up);
+ //       PersProjTrans.InitPersProjTransform(m_persProj.FOV, m_persProj.Width, m_persProj.Height, m_persProj.zNear, m_persProj.zFar);
+
+        transformation = PersProjTrans * CameraRotateTrans * CameraTranslationTrans * TranslationTrans * RotateTrans * ScaleTrans;
         return &transformation;
     }
 
@@ -140,10 +149,32 @@ public:
 
         m[0][0] = 1.0f / (tanHalfFOV * ar); m[0][1] = 0.0f; m[0][2] = 0.0f; m[0][3] = 0.0f;
         m[1][0] = 0.0f; m[1][1] = 1.0f / tanHalfFOV; m[1][2] = 0.0f; m[1][3] = 0.0f;
-        m[2][0] = 0.0f; m[2][1] = 0.0f; m[2][2] = (-zNear - zFar) / zRange; m[2][3] = 1.0f;
-        m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 2.0f * zFar * zNear / zRange; m[3][3] = 0.0f;
+        m[2][0] = 0.0f; m[2][1] = 0.0f; m[2][2] = (-zNear - zFar) / zRange; m[2][3] = 0.0f;
+        m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 2.0f * zFar * zNear / zRange; m[3][3] = 1.0f;
     }
 
+    void InitCameraTransform(glm::mat4& m) const
+    {
+        glm::vec3 N = m_camera.Target;
+        glm::normalize(N);
+        glm::vec3 U = m_camera.Up;
+        glm::normalize(N);
+        U = glm::cross(U, N);
+        glm::vec3 V = glm::cross(N, U);
+
+        m[0][0] = U.x;   m[0][1] = U.y;   m[0][2] = U.z;   m[0][3] = 0.0f;
+        m[1][0] = V.x;   m[1][1] = V.y;   m[1][2] = V.z;   m[1][3] = 0.0f;
+        m[2][0] = N.x;   m[2][1] = N.y;   m[2][2] = N.z;   m[2][3] = 0.0f;
+        m[3][0] = 0.0f;  m[3][1] = 0.0f;  m[3][2] = 0.0f;  m[3][3] = 1.0f;
+    }
+
+    void InitTranslationTransformCam(glm::mat4& m) const
+    {
+        m[0][0] = 1.0f; m[0][1] = 0.0f; m[0][2] = 0.0f; m[0][3] = -m_camera.Pos.x;
+        m[1][0] = 0.0f; m[1][1] = 1.0f; m[1][2] = 0.0f; m[1][3] = -m_camera.Pos.y;
+        m[2][0] = 0.0f; m[2][1] = 0.0f; m[2][2] = 1.0f; m[2][3] = -m_camera.Pos.z;
+        m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 0.0f; m[3][3] = 1.0f;
+    }
 };
 
 
