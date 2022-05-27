@@ -74,6 +74,7 @@
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>C:\Program Files %28x86%29\ImageMagick-7.1.0-Q16\include;C:\Program Files %28x86%29\ImageMagick-7.1.0-Q16\include\Magick++;C:\Program Files %28x86%29\ImageMagick-7.1.0-Q16\include\MagickCore;C:\Program Files %28x86%29\ImageMagick-7.1.0-Q16\include\MagickWand;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Program Files %28x86%29\ImageMagick-7.1.0-Q16\lib;$(LibaryPath);$(LibraryPath)</LibraryPath>
+    <ReferencePath>C:\Program Files %28x86%29\ImageMagick-7.1.0-Q16\include\MagickWand;C:\Program Files %28x86%29\ImageMagick-7.1.0-Q16\include\MagickCore;C:\Program Files %28x86%29\ImageMagick-7.1.0-Q16\include\Magick++;C:\Program Files %28x86%29\ImageMagick-7.1.0-Q16\include;$(ReferencePath)</ReferencePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -148,11 +149,13 @@
     <ClCompile Include="KG1lab.cpp" />
     <ClCompile Include="math_3d.cpp" />
     <ClCompile Include="Pipeline.cpp" />
+    <ClCompile Include="texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="camera.h" />
     <ClInclude Include="math_3d.h" />
     <ClInclude Include="Pipeline.h" />
+    <ClInclude Include="texture.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
