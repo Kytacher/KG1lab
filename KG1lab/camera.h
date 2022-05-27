@@ -1,5 +1,11 @@
-#include <math.h>
+#ifndef CAMERA_H
+#define	CAMERA_H
+
 #include "glm/mat4x4.hpp"
+#include "math_3d.h"
+#define ToRadian(x) ((x) * M_PI / 180.0f)
+#define ToDegree(x) ((x) * 180.0f / M_PI)
+#define _USE_MATH_DEFINES
 
 
 class Camera
@@ -8,7 +14,7 @@ public:
 
     Camera(int WindowWidth, int WindowHeight);
 
-    Camera(int WindowWidth, int WindowHeight, const glm::vec3& Pos, const glm::vec3& Target, const glm::vec3& Up);
+    Camera(int WindowWidth, int WindowHeight, const Vector3f& Pos, const Vector3f& Target, const Vector3f& Up);
 
     bool OnKeyboard(int Key);
 
@@ -16,17 +22,17 @@ public:
 
     void OnRender();
 
-    const glm::vec3& GetPos() const
+    const Vector3f& GetPos() const
     {
         return m_pos;
     }
 
-    const glm::vec3& GetTarget() const
+    const Vector3f& GetTarget() const
     {
         return m_target;
     }
 
-    const glm::vec3& GetUp() const
+    const Vector3f& GetUp() const
     {
         return m_up;
     }
@@ -35,9 +41,9 @@ private:
     void Init();
     void Update();
 
-    glm::vec3 m_pos;
-    glm::vec3 m_target;
-    glm::vec3 m_up;
+    Vector3f m_pos;
+    Vector3f m_target;
+    Vector3f m_up;
 
     int m_windowWidth;
     int m_windowHeight;
@@ -50,7 +56,7 @@ private:
     bool m_OnLeftEdge;
     bool m_OnRightEdge;
 
-    glm::vec2 m_mousePos;
+    Vector2i m_mousePos;
 };
 
-
+#endif	/* CAMERA_H */

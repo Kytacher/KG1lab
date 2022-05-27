@@ -72,6 +72,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>C:\Program Files %28x86%29\ImageMagick-7.1.0-Q16\include;C:\Program Files %28x86%29\ImageMagick-7.1.0-Q16\include\Magick++;C:\Program Files %28x86%29\ImageMagick-7.1.0-Q16\include\MagickCore;C:\Program Files %28x86%29\ImageMagick-7.1.0-Q16\include\MagickWand;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files %28x86%29\ImageMagick-7.1.0-Q16\lib;$(LibaryPath);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -88,10 +90,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\ImageMagick-7.1.0-Q16\include\MagickWand;C:\Program Files %28x86%29\ImageMagick-7.1.0-Q16\include\MagickCore;C:\Program Files %28x86%29\ImageMagick-7.1.0-Q16\include\Magick++;C:\Program Files %28x86%29\ImageMagick-7.1.0-Q16\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);C:\Program Files %28x86%29\ImageMagick-7.1.0-Q16\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>CORE_RL_Magick++_.lib;CORE_RL_MagickCore_.lib;CORE_RL_MagickWand_.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -141,10 +146,12 @@
   <ItemGroup>
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="KG1lab.cpp" />
+    <ClCompile Include="math_3d.cpp" />
     <ClCompile Include="Pipeline.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="camera.h" />
+    <ClInclude Include="math_3d.h" />
     <ClInclude Include="Pipeline.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

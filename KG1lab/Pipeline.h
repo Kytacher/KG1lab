@@ -1,9 +1,8 @@
-#pragma once
+#ifndef PIPELINE_H
+#define	PIPELINE_H
 
+#include "math_3d.h"
 #include "glm/glm.hpp"
-#define ToRadian(x) ((x) * M_PI / 180.0f)
-#define ToDegree(x) ((x) * 180.0f / M_PI)
-#define _USE_MATH_DEFINES
 #include <math.h>
 #include "glm/mat4x4.hpp"
 #include <glm/fwd.hpp>
@@ -11,14 +10,13 @@
 class Pipeline
 {
 private:
-    glm::vec3 scale;
-    glm::vec3 worldPos;
-    glm::vec3 rotateInfo;
-    glm::mat4 transformation;
+    Vector3f m_scale;
+    Vector3f m_worldPos;
+    Vector3f m_rotateInfo;
     struct {
-        glm::vec3 Pos;
-        glm::vec3 Target;
-        glm::vec3 Up;
+        Vector3f Pos;
+        Vector3f Target;
+        Vector3f Up;
     } m_camera;
     struct
     {
@@ -28,34 +26,35 @@ private:
         float zNear;
         float zFar;
     } m_persProj;
+    Matrix4f m_transformation;
 
 public:
     Pipeline()
     {
-        scale = glm::vec3(1.0f, 1.0f, 1.0f);
-        worldPos = glm::vec3(0.0f, 0.0f, 0.0f);
-        rotateInfo = glm::vec3(0.0f, 0.0f, 0.0f);
+        m_scale = Vector3f(1.0f, 1.0f, 1.0f);
+        m_worldPos = Vector3f(0.0f, 0.0f, 0.0f);
+        m_rotateInfo = Vector3f(0.0f, 0.0f, 0.0f);
     }
 
     void Scale(float ScaleX, float ScaleY, float ScaleZ)
     {
-        scale.x = ScaleX;
-        scale.y = ScaleY;
-        scale.z = ScaleZ;
+        m_scale.x = ScaleX;
+        m_scale.y = ScaleY;
+        m_scale.z = ScaleZ;
     }
 
     void WorldPos(float x, float y, float z)
     {
-        worldPos.x = x;
-        worldPos.y = y;
-        worldPos.z = z;
+        m_worldPos.x = x;
+        m_worldPos.y = y;
+        m_worldPos.z = z;
     }
 
     void Rotate(float RotateX, float RotateY, float RotateZ)
     {
-        rotateInfo.x = RotateX;
-        rotateInfo.y = RotateY;
-        rotateInfo.z = RotateZ;
+        m_rotateInfo.x = RotateX;
+        m_rotateInfo.y = RotateY;
+        m_rotateInfo.z = RotateZ;
     }
 
     void SetPerspectiveProj(float FOV, float Width, float Height, float zNear, float zFar)
@@ -67,36 +66,17 @@ public:
         m_persProj.zFar = zFar;
     }
 
-    void SetCamera(const glm::vec3& Pos, const glm::vec3& Target, const glm::vec3& Up)
+    void SetCamera(const Vector3f& Pos, const Vector3f& Target, const Vector3f& Up)
     {
         m_camera.Pos = Pos;
         m_camera.Target = Target;
         m_camera.Up = Up;
     }
 
-    const glm::mat4* getTransformation()
-    {
-        glm::mat4 ScaleTrans, RotateTrans, TranslationTrans, PersProjTrans, CameraRotateTrans, CameraTranslationTrans;
-        InitScaleTransform(ScaleTrans);
-        InitRotateTransform(RotateTrans);
-        InitTranslationTransform(TranslationTrans);
-        InitTranslationTransformCam(CameraTranslationTrans);
-        InitCameraTransform(CameraRotateTrans);
-        InitPerspectiveProj(PersProjTrans);
+    const Matrix4f* getTransformation();
 
- //       ScaleTrans.InitScaleTransform(m_scale.x, m_scale.y, m_scale.z);
- //       RotateTrans.InitRotateTransform(m_rotateInfo.x, m_rotateInfo.y, m_rotateInfo.z);
-  //      TranslationTrans.InitTranslationTransform(m_worldPos.x, m_worldPos.y, m_worldPos.z);
- //       CameraTranslationTrans.InitTranslationTransform(-m_camera.Pos.x, -m_camera.Pos.y, -m_camera.Pos.z);
- //       CameraRotateTrans.InitCameraTransform(m_camera.Target, m_camera.Up);
- //       PersProjTrans.InitPersProjTransform(m_persProj.FOV, m_persProj.Width, m_persProj.Height, m_persProj.zNear, m_persProj.zFar);
-
-        transformation = PersProjTrans * CameraRotateTrans * CameraTranslationTrans * TranslationTrans * RotateTrans * ScaleTrans;
-        return &transformation;
-    }
-
-
-
+   
+/*
     void InitScaleTransform(glm::mat4& m) const
     {
         m[0][0] = scale.x; m[0][1] = 0.0f; m[0][2] = 0.0f; m[0][3] = 0.0f;
@@ -149,8 +129,8 @@ public:
 
         m[0][0] = 1.0f / (tanHalfFOV * ar); m[0][1] = 0.0f; m[0][2] = 0.0f; m[0][3] = 0.0f;
         m[1][0] = 0.0f; m[1][1] = 1.0f / tanHalfFOV; m[1][2] = 0.0f; m[1][3] = 0.0f;
-        m[2][0] = 0.0f; m[2][1] = 0.0f; m[2][2] = (-zNear - zFar) / zRange; m[2][3] = 0.0f;
-        m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 2.0f * zFar * zNear / zRange; m[3][3] = 1.0f;
+        m[2][0] = 0.0f; m[2][1] = 0.0f; m[2][2] = (-zNear - zFar) / zRange; m[2][3] = 2.0f * zFar * zNear / zRange;
+        m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 1.0f; m[3][3] = 1.0f;
     }
 
     void InitCameraTransform(glm::mat4& m) const
@@ -174,7 +154,8 @@ public:
         m[1][0] = 0.0f; m[1][1] = 1.0f; m[1][2] = 0.0f; m[1][3] = -m_camera.Pos.y;
         m[2][0] = 0.0f; m[2][1] = 0.0f; m[2][2] = 1.0f; m[2][3] = -m_camera.Pos.z;
         m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 0.0f; m[3][3] = 1.0f;
-    }
+    } */
 };
 
 
+#endif	/* PIPELINE_H */
