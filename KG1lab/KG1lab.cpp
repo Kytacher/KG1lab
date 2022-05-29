@@ -11,6 +11,7 @@
 #include "texture.h"
 #include "lighting_technique.h"
 #include "glut_backend.h"
+#include "util.h"
 
 #define ToRadian(x) ((x) * M_PI / 180.0f)
 #define ToDegree(x) ((x) * 180.0f / M_PI)
@@ -22,6 +23,7 @@ struct Vertex
 {
 	Vector3f m_pos;
 	Vector2f m_tex;
+	Vector3f m_normal;
 
 	Vertex() {}
 
@@ -29,6 +31,7 @@ struct Vertex
 	{
 		m_pos = pos;
 		m_tex = tex;
+		m_normal = Vector3f(0.0f, 0.0f, 0.0f);
 	}
 };
 
@@ -45,6 +48,8 @@ public:
 		sc = 0.0f;
 		directionalLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
 		directionalLight.AmbientIntensity = 0.5f;
+		directionalLight.DiffuseIntensity = 0.75f;
+		directionalLight.Direction = Vector3f(1.0f, 0.0, 0.0);
 	}
 
 	~Main()
@@ -56,10 +61,18 @@ public:
 
 	bool Init()
 	{
-		pGameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT);
+		Vector3f Pos(0.0f, 0.0f, -3.0f);
+		Vector3f Target(0.0f, 0.0f, 1.0f);
+		Vector3f Up(0.0, 1.0f, 0.0f);
+		pGameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT, Pos, Target, Up);
 
-		createVertexBuffer();
-		createIndexBuffer();
+		unsigned int Indices[] = { 0, 3, 1,
+								   1, 3, 2,
+								   2, 3, 0,
+								   1, 2, 0 };
+
+		createIndexBuffer(Indices, sizeof(Indices));
+		createVertexBuffer(Indices, ARRAY_SIZE_IN_ELEMENTS(Indices));
 
 		pEffect = new LightingTechnique();
 
@@ -91,7 +104,6 @@ public:
 		pGameCamera->OnRender();
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		static float sc = 0.0f;
 		sc += 0.3f;
 
 		// Создаем: едиинчную матрицу, матричу вращения, матрицу движения, матрицу размера и обьединяеим в итоговую матрицу result
@@ -130,7 +142,11 @@ public:
 		p.SetCamera(pGameCamera->GetPos(), pGameCamera->GetTarget(), pGameCamera->GetUp());
 		p.SetPerspectiveProj(60.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 100.0f);
 
-		pEffect->SetWVP(p.getTransformation());
+		pEffect->SetWVP(p.GetWVPTrans());
+
+		const Matrix4f& WorldTransformation = p.GetWorldTrans();
+		pEffect->SetWorldMatrix(WorldTransformation);
+
 		pEffect->SetDirectionalLight(directionalLight);
 
 		//	p.WorldPos(sinf(sc), 0.0f, 0.0f);
@@ -148,22 +164,24 @@ public:
 		//используем атрибуты вершин
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
 		//привязка буфера для рисования
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
 		//устанавливаем атрибуты вершин
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
 		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)12);
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)20);
 		//привязка буфера для рисования
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
 		pTexture->Bind(GL_TEXTURE0);
 
 		//отрисовка
-		pTexture->Bind(GL_TEXTURE0);
 		glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
 		//отключаме атрбуты вершин
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
+		glDisableVertexAttribArray(2);
 		//	for (int i = 0; i < 10; i++)
 		//		glDrawArrays(GL_POLYGON, 0, i);
 			//меняем местами фоновый буфер и буфер рендера местами
@@ -194,6 +212,14 @@ public:
 		case 's':
 			directionalLight.AmbientIntensity -= 0.05f;
 			break;
+
+		case 'z':
+			directionalLight.DiffuseIntensity += 0.05f;
+			break;
+
+		case 'x':
+			directionalLight.DiffuseIntensity -= 0.05f;
+			break;
 		}
 	}
 
@@ -202,30 +228,52 @@ public:
 		pGameCamera->OnMouse(x, y);
 	}
 
-	void createVertexBuffer() {
+private:
+
+	void CalcNormals(const unsigned int* pIndices, unsigned int IndexCount,
+		Vertex* pVertices, unsigned int VertexCount) {
+		for (unsigned int i = 0; i < IndexCount; i += 3) {
+			unsigned int Index0 = pIndices[i];
+			unsigned int Index1 = pIndices[i + 1];
+			unsigned int Index2 = pIndices[i + 2];
+			Vector3f v1 = pVertices[Index1].m_pos - pVertices[Index0].m_pos;
+			Vector3f v2 = pVertices[Index2].m_pos - pVertices[Index0].m_pos;
+			Vector3f Normal = v1.Cross(v2);
+			Normal.Normalize();
+
+			pVertices[Index0].m_normal += Normal;
+			pVertices[Index1].m_normal += Normal;
+			pVertices[Index2].m_normal += Normal;
+		}
+
+		for (unsigned int i = 0; i < VertexCount; i++) {
+			pVertices[i].m_normal.Normalize();
+		}
+	}
+
+	void createVertexBuffer(const unsigned int* pIndices, unsigned int IndexCount)
+	{
 		Vertex Vertices[4] = { Vertex(Vector3f(-1.0f, -1.0f, 0.5773f), Vector2f(0.0f, 0.0f)),
-							   Vertex(Vector3f(0.0f, -1.0f, -1.15475), Vector2f(0.5f, 0.0f)),
-							   Vertex(Vector3f(1.0f, -1.0f, 0.5773f),  Vector2f(1.0f, 0.0f)),
-							   Vertex(Vector3f(0.0f, 1.0f, 0.0f),      Vector2f(0.5f, 1.0f)) };
+                               Vertex(Vector3f(0.0f, -1.0f, -1.15475), Vector2f(0.5f, 0.0f)),
+                               Vertex(Vector3f(1.0f, -1.0f, 0.5773f),  Vector2f(1.0f, 0.0f)),
+                               Vertex(Vector3f(0.0f, 1.0f, 0.0f),      Vector2f(0.5f, 1.0f)) };
+
+		unsigned int VertexCount = ARRAY_SIZE_IN_ELEMENTS(Vertices);
+
+		CalcNormals(pIndices, IndexCount, Vertices, VertexCount);
+
 		glGenBuffers(1, &VBO);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
 	}
 
-	void createIndexBuffer() {
-		unsigned int indices[] = {
-				0, 3, 1,
-				1, 3, 2,
-				2, 3, 0,
-				1, 2, 0
-		};
-
+	void createIndexBuffer(const unsigned int* pIndices, unsigned int SizeInBytes)
+	{
 		glGenBuffers(1, &IBO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, SizeInBytes, pIndices, GL_STATIC_DRAW);
 	}
 
-private:
 	GLuint VBO;
 	GLuint IBO;
 	LightingTechnique* pEffect;

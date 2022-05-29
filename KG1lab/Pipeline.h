@@ -26,7 +26,8 @@ private:
         float zNear;
         float zFar;
     } m_persProj;
-    Matrix4f m_transformation;
+    Matrix4f m_WVPtransformation;
+    Matrix4f m_WorldTransformation;
 
 public:
     Pipeline()
@@ -73,7 +74,10 @@ public:
         m_camera.Up = Up;
     }
 
-    const Matrix4f* getTransformation();
+    const Matrix4f& GetWVPTrans();
+
+    const Matrix4f& GetWorldTrans();
+
 
    
 /*
