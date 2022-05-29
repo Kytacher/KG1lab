@@ -46,10 +46,10 @@ layout (location = 1) in vec2 TexCoord;                                         
                                                                                     \n\
 uniform mat4 gWorld;                                                                \n\
                                                                                     \n\
-out vec2 TexCoord0;                                                                 \n\                                                                                    \n\
+out vec2 TexCoord0;                                                                 \n\                                                                                \n\
 void main()                                                                         \n\
 {                                                                                   \n\
-     gl_Position = gWorld * vec4(Position, 1.0);                                      \n\
+     gl_Position = gWorld * vec4(Position, 1.0);                                    \n\
     TexCoord0 = TexCoord;                                                           \n\
 }";
 
@@ -63,7 +63,7 @@ uniform sampler2D gSampler;                                                     
                                                                                     \n\                                                                              \n\
 void main()                                                                         \n\
 {                                                                                   \n\
-   FragColor = texture2D(gSampler, TexCoord0.xy);                                  \n\
+   FragColor = texture2D(gSampler, TexCoord0.xy);                                   \n\
 }";
 
 static void RenderSceneCB()
@@ -72,7 +72,7 @@ static void RenderSceneCB()
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	static float sc = 0.0f;
-	sc += 0.001f;
+	sc += 0.3f;
 
 	// Создаем: едиинчную матрицу, матричу вращения, матрицу движения, матрицу размера и обьединяеим в итоговую матрицу result
 	/*glm::mat4x4 unit;
@@ -105,11 +105,10 @@ static void RenderSceneCB()
 	//создаем объект конвейера, настраиваем его и отправляем результат в шейдер.
 	Pipeline p;
 
-	p.Scale(sinf(sc) / 2, sinf(sc * 0.5), 1.0f);
-	p.WorldPos(sinf(sc) / 2, 0.0f, 0.0f);
-	p.Rotate(-cosf(sc), sinf(sc), 1.0f);
+	p.Rotate(0.0f, sc, 0.0f);
+	p.WorldPos(0.0f, 0.0f, 3.0f);
 	p.SetCamera(pGameCamera->GetPos(), pGameCamera->GetTarget(), pGameCamera->GetUp());
-	p.SetPerspectiveProj(90.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 200.0f);
+	p.SetPerspectiveProj(60.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 100.0f);
 
 //	p.WorldPos(sinf(sc), 0.0f, 0.0f);
 //	p.Rotate(sinf(sc) * 90.0f, sinf(sc) * 90.0f, sinf(sc) * 90.0f);
@@ -132,7 +131,7 @@ static void RenderSceneCB()
 	//привязка буфера для рисования
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	//устанавливаем атрибуты вершин
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)12);
 	//привязка буфера для рисования
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
@@ -213,7 +212,7 @@ void createIndexBuffer() {
 			0, 3, 1,
 			1, 3, 2,
 			2, 3, 0,
-			0, 2, 1
+			1, 2, 0
 	};
 
 	glGenBuffers(1, &IBO);
@@ -269,12 +268,12 @@ int main(int argc, char** argv)
 	//буферизация
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
 	//настройки окна
-	glutInitWindowSize(600, 600);
 	glutInitWindowPosition(100, 100);
+	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutCreateWindow("Tutorial 01");
+	glutGameModeString("1280x1024@32");
+	glutEnterGameMode();
 
-//	glutGameModeString("1280x1024@32");
-//	glutEnterGameMode();
 
 	//отрисовка
 	glutDisplayFunc(RenderSceneCB);
@@ -283,7 +282,7 @@ int main(int argc, char** argv)
 	glutPassiveMotionFunc(PassiveMouseCB);
 	glutKeyboardFunc(KeyboardCB);
 
-	pGameCamera = new Camera(600, 600);
+	pGameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT);
 	//инициализация glew
 	GLenum res = glewInit();
 	if (res != GLEW_OK)
@@ -307,13 +306,14 @@ int main(int argc, char** argv)
 	CompileShaders();
 	glUniform1i(gSampler, 0);
 
-	pTexture = new Texture(GL_TEXTURE_2D, "D://test.png");
+	pTexture = new Texture(GL_TEXTURE_2D, "C:\\3p.png");
 
 	if (!pTexture->Load()) {	
 		return 1;
 	}
     
 	glutMainLoop();
+	return 0;
 }
 
 
