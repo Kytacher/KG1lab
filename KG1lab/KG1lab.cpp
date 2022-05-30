@@ -106,7 +106,7 @@ public:
 
 		sc += 0.3f;
 
-		PointLight pl[3];
+/*		PointLight pl[3];
 		pl[0].DiffuseIntensity = 0.5f;
 		pl[0].Color = Vector3f(1.0f, 0.0f, 0.0f);
 		pl[0].Position = Vector3f(sinf(sc) * 10, 1.0f, cosf(sc) * 10);
@@ -122,8 +122,24 @@ public:
 		pl[2].Position = Vector3f(sinf(sc + 4.2f) * 10, 1.0f, cosf(sc + 4.2f) * 10);
 		pl[2].Attenuation.Linear = 0.1f;
 
-		pEffect->SetPointLights(3, pl);
+		pEffect->SetPointLights(3, pl); */
 
+		SpotLight sl[2];
+		sl[0].DiffuseIntensity = 15.0f;
+		sl[0].Color = Vector3f(1.0f, 1.0f, 0.7f);
+		sl[0].Position = Vector3f(-0.0f, -1.9f, -0.0f);
+		sl[0].Direction = Vector3f(sinf(sc), 0.0f, cosf(sc));
+		sl[0].Attenuation.Linear = 0.1f;
+		sl[0].Cutoff = 20.0f;
+
+		sl[1].DiffuseIntensity = 5.0f;
+		sl[1].Color = Vector3f(0.0f, 1.0f, 1.0f);
+		sl[1].Position = pGameCamera->GetPos();
+		sl[1].Direction = pGameCamera->GetTarget();
+		sl[1].Attenuation.Linear = 0.1f;
+		sl[1].Cutoff = 10.0f;
+
+		pEffect->SetSpotLights(2, sl);
 
 		// Создаем: едиинчную матрицу, матричу вращения, матрицу движения, матрицу размера и обьединяеим в итоговую матрицу result
 		/*glm::mat4x4 unit;
