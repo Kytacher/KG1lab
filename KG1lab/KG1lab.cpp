@@ -106,6 +106,25 @@ public:
 
 		sc += 0.3f;
 
+		PointLight pl[3];
+		pl[0].DiffuseIntensity = 0.5f;
+		pl[0].Color = Vector3f(1.0f, 0.0f, 0.0f);
+		pl[0].Position = Vector3f(sinf(sc) * 10, 1.0f, cosf(sc) * 10);
+		pl[0].Attenuation.Linear = 0.1f;
+
+		pl[1].DiffuseIntensity = 0.5f;
+		pl[1].Color = Vector3f(0.0f, 1.0f, 0.0f);
+		pl[1].Position = Vector3f(sinf(sc + 2.1f) * 10, 1.0f, cosf(sc + 2.1f) * 10);
+		pl[1].Attenuation.Linear = 0.1f;
+
+		pl[2].DiffuseIntensity = 0.5f;
+		pl[2].Color = Vector3f(0.0f, 0.0f, 1.0f);
+		pl[2].Position = Vector3f(sinf(sc + 4.2f) * 10, 1.0f, cosf(sc + 4.2f) * 10);
+		pl[2].Attenuation.Linear = 0.1f;
+
+		pEffect->SetPointLights(3, pl);
+
+
 		// Создаем: едиинчную матрицу, матричу вращения, матрицу движения, матрицу размера и обьединяеим в итоговую матрицу result
 		/*glm::mat4x4 unit;
 		unit[0][0] = 1.0f; unit[0][1] = 0.0f; unit[0][2] = 0.0f; unit[0][3] = 0.0f;
@@ -284,7 +303,7 @@ private:
 	Texture* pTexture;
 	Camera* pGameCamera;
 	float sc;
-	DirectionLight directionalLight;
+	DirectionalLight directionalLight;
 };
 
 int main(int argc, char** argv)
