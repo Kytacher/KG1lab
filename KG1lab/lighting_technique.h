@@ -24,12 +24,19 @@ public:
     void SetTextureUnit(unsigned int TextureUnit);
     void SetDirectionalLight(const DirectionLight& Light);
 
+    void SetEyeWorldPos(const Vector3f& EyeWorldPos);
+    void SetMatSpecularIntensity(float Intensity);
+    void SetMatSpecularPower(float Power);
+
 private:
     GLuint m_WVPLocation;
     GLuint m_samplerLocation;
     GLuint m_WorldMatrixLocation;
  //   GLuint m_dirLightColorLocation;
  //   GLuint m_dirLightAmbientIntensityLocation;
+    GLuint m_eyeWorldPosition;
+    GLuint m_matSpecularIntensityLocation;
+    GLuint m_matSpecularPowerLocation;
     struct {
         GLuint Color;
         GLuint AmbientIntensity;

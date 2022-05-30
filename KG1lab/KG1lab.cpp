@@ -149,6 +149,10 @@ public:
 
 		pEffect->SetDirectionalLight(directionalLight);
 
+		pEffect->SetEyeWorldPos(pGameCamera->GetPos());
+		pEffect->SetMatSpecularIntensity(1.0f);
+		pEffect->SetMatSpecularPower(32);
+
 		//	p.WorldPos(sinf(sc), 0.0f, 0.0f);
 		//	p.Rotate(sinf(sc) * 90.0f, sinf(sc) * 90.0f, sinf(sc) * 90.0f);
 		//	p.Scale(sinf(sc * 0.1f), sinf(sc * 0.1f), sinf(sc * 0.1f));
