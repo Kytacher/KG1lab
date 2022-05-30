@@ -156,7 +156,10 @@
     <ClCompile Include="KG1lab.cpp" />
     <ClCompile Include="lighting_technique.cpp" />
     <ClCompile Include="math_3d.cpp" />
+    <ClCompile Include="mesh.cpp" />
     <ClCompile Include="Pipeline.cpp" />
+    <ClCompile Include="shadow_map_technique.cpp" />
+    <ClCompile Include="shafow_map_fbo.cpp" />
     <ClCompile Include="technique.cpp" />
     <ClCompile Include="texture.cpp" />
     <ClCompile Include="util.cpp" />
@@ -167,7 +170,10 @@
     <ClInclude Include="glut_backend.h" />
     <ClInclude Include="lighting_technique.h" />
     <ClInclude Include="math_3d.h" />
+    <ClInclude Include="mesh.h" />
     <ClInclude Include="Pipeline.h" />
+    <ClInclude Include="shadow_map_technique.h" />
+    <ClInclude Include="shafow_map_fbo.h" />
     <ClInclude Include="technique.h" />
     <ClInclude Include="texture.h" />
     <ClInclude Include="util.h" />
