@@ -22,7 +22,7 @@
 #define WINDOW_WIDTH  1280
 #define WINDOW_HEIGHT 1024
 
-struct Vertex
+/*struct Vertex
 {
 	Vector3f m_pos;
 	Vector2f m_tex;
@@ -36,7 +36,7 @@ struct Vertex
 		m_tex = tex;
 		m_normal = Vector3f(0.0f, 0.0f, 0.0f);
 	}
-};
+}; */
 
 
 class Main : public ICallbacks
@@ -132,13 +132,13 @@ public:
 
 		m_pQuad = new Mesh();
 
-		if (!m_pQuad->LoadMesh("C://test.png")) {
+		if (!m_pQuad->LoadMesh("C://quad.obj")) {
 			return false;
 		}
 
 		m_pMesh = new Mesh();
 
-		return m_pMesh->LoadMesh("C://test1.png");
+		return m_pMesh->LoadMesh("C://phoenix_ugv.md2"); 
 	}
 
 	void Run()
@@ -409,7 +409,7 @@ private:
 //	Texture* pTexture;
 	Camera* pGameCamera;
 	float sc;
-	DirectionalLight directionalLight;
+//	DirectionalLight directionalLight;
 	ShadowMapTechnique* m_pShadowMapTech;
 	SpotLight m_spotLight;
 	Mesh* m_pMesh;
