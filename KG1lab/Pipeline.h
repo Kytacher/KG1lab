@@ -2,10 +2,8 @@
 #define	PIPELINE_H
 
 #include "math_3d.h"
-#include "glm/glm.hpp"
 #include <math.h>
-#include "glm/mat4x4.hpp"
-#include <glm/fwd.hpp>
+
 
 class Pipeline
 {
@@ -13,19 +11,22 @@ private:
     Vector3f m_scale;
     Vector3f m_worldPos;
     Vector3f m_rotateInfo;
+
+    PersProjInfo m_persProjInfo;
+
     struct {
         Vector3f Pos;
         Vector3f Target;
         Vector3f Up;
     } m_camera;
-    struct
+  /*  struct
     {
         float FOV;
         float Width;
         float Height;
         float zNear;
         float zFar;
-    } m_persProj;
+    } m_persProj; */
     Matrix4f m_WVPtransformation;
     Matrix4f m_WorldTransformation;
 
@@ -58,13 +59,14 @@ public:
         m_rotateInfo.z = RotateZ;
     }
 
-    void SetPerspectiveProj(float FOV, float Width, float Height, float zNear, float zFar)
+    void SetPerspectiveProj(const PersProjInfo& p)
     {
-        m_persProj.FOV = FOV;
+    /*    m_persProj.FOV = FOV;
         m_persProj.Width = Width;
         m_persProj.Height = Height;
         m_persProj.zNear = zNear;
-        m_persProj.zFar = zFar;
+        m_persProj.zFar = zFar; */
+        m_persProjInfo = p;
     }
 
     void SetCamera(const Vector3f& Pos, const Vector3f& Target, const Vector3f& Up)

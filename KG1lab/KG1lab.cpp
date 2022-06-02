@@ -1,20 +1,15 @@
-﻿#include <stdio.h>
-#include <string.h>
-#include <assert.h>
-#include <math.h>
+﻿#include <math.h>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include <iostream>
-#include "Pipeline.h"
+
+#include "util.h"
+#include "pipeline.h"
 #include "camera.h"
-#include "math_3d.h"
 #include "texture.h"
 #include "lighting_technique.h"
 #include "glut_backend.h"
-#include "util.h"
 #include "mesh.h"
-#include "shafow_map_fbo.h"
-#include "shadow_map_technique.h"
+#include "skybox.h"
 
 #define ToRadian(x) ((x) * M_PI / 180.0f)
 #define ToDegree(x) ((x) * 180.0f / M_PI)
@@ -46,36 +41,52 @@ public:
 	Main()
 	{
 		pGameCamera = NULL;
+		m_pLightingTechnique = NULL;
+		m_pTankMesh = NULL;
+		m_pSkyBox = NULL;
 	//	pTexture = NULL;
 	//	pEffect = NULL;
 		sc = 0.0f;
 
-		m_pMesh = NULL;
-		m_pQuad = NULL;
-		m_pGroundTex = NULL;
-		m_pShadowMapEffect = NULL;
+	//	m_pMesh = NULL;
+	//	m_pQuad = NULL;
+	//	m_pGroundTex = NULL;
+	//	m_pShadowMapEffect = NULL;
 	/*	directionalLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
 		directionalLight.AmbientIntensity = 0.5f;
 		directionalLight.DiffuseIntensity = 0.75f;
 		directionalLight.Direction = Vector3f(1.0f, 0.0, 0.0); */
-		m_spotLight.AmbientIntensity = 0.0f;
+	/*	m_spotLight.AmbientIntensity = 0.0f;
 		m_spotLight.DiffuseIntensity = 0.9f;
 		m_spotLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
 		m_spotLight.Attenuation.Linear = 0.01f;
 		m_spotLight.Position = Vector3f(-20.0, 20.0, 5.0f);
 		m_spotLight.Direction = Vector3f(1.0f, -1.0f, 0.0f);
-		m_spotLight.Cutoff = 20.0f;
+		m_spotLight.Cutoff = 20.0f; */
+
+		m_dirLight.AmbientIntensity = 0.2f;
+		m_dirLight.DiffuseIntensity = 0.8f;
+		m_dirLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
+		m_dirLight.Direction = Vector3f(1.0f, -1.0f, 0.0f);
+
+		m_persProjInfo.FOV = 60.0f;
+		m_persProjInfo.Height = WINDOW_HEIGHT;
+		m_persProjInfo.Width = WINDOW_WIDTH;
+		m_persProjInfo.zNear = 1.0f;
+		m_persProjInfo.zFar = 100.0f;
 	}
 
 	~Main()
 	{
 	//	SAFE_DELETE(pEffect);
-		SAFE_DELETE(m_pLightingEffect);
-		SAFE_DELETE(m_pShadowMapEffect);
-		SAFE_DELETE(pGameCamera);
-		SAFE_DELETE(m_pMesh);
-		SAFE_DELETE(m_pQuad);
-		SAFE_DELETE(m_pGroundTex);
+	//	SAFE_DELETE(m_pShadowMapEffect);
+	//	SAFE_DELETE(pGameCamera);
+	//	SAFE_DELETE(m_pMesh);
+	//	SAFE_DELETE(m_pQuad);
+	//	SAFE_DELETE(m_pGroundTex);
+		SAFE_DELETE(m_pLightingTechnique);
+		SAFE_DELETE(m_pTankMesh);
+		SAFE_DELETE(m_pSkyBox);
 	}
 
 	bool Init()
@@ -116,23 +127,22 @@ public:
 		Vector3f Target(0.0f, -0.2f, 1.0f);
 		Vector3f Up(0.0, 1.0f, 0.0f);
 
-		if (!m_shadowMapFBO.Init(WINDOW_WIDTH, WINDOW_HEIGHT)) {
+/*		if (!m_shadowMapFBO.Init(WINDOW_WIDTH, WINDOW_HEIGHT)) {
 			return false;
-		}
+		} */
 
 		pGameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT);
 
-		m_pLightingEffect = new LightingTechnique();
+		m_pLightingTechnique = new LightingTechnique();
 
-		if (!m_pLightingEffect->Init()) {
+		if (!m_pLightingTechnique->Init()) {
 			printf("Error initializing the lighting technique\n");
 			return false;
 		}
 
-		m_pLightingEffect->Enable();
-		m_pLightingEffect->SetSpotLights(1, &m_spotLight);
-		m_pLightingEffect->SetTextureUnit(0);
-		m_pLightingEffect->SetShadowMapTextureUnit(1);
+		m_pLightingTechnique->Enable();
+		m_pLightingTechnique->SetDirectionalLight(m_dirLight);
+		m_pLightingTechnique->SetTextureUnit(0);
 
 /*		pEffect = new LightingTechnique();
 
@@ -141,14 +151,34 @@ public:
 			return false;
 		} */
 
-		m_pShadowMapEffect = new ShadowMapTechnique();
+/*		m_pShadowMapEffect = new ShadowMapTechnique();
 
 		if (!m_pShadowMapEffect->Init()) {
 			printf("Error initializing the shadow map technique\n");
 			return false;
-		} 
+		}  */
 
-		m_pQuad = new Mesh();
+		m_pTankMesh = new Mesh();
+
+		if (!m_pTankMesh->LoadMesh("C://phoenix_ugv.md2")) {
+			return false;
+		}
+
+		m_pSkyBox = new SkyBox(pGameCamera, m_persProjInfo);
+
+		if (!m_pSkyBox->Init("C://",
+			"sp3right.jpg",
+			"sp3left.jpg",
+			"sp3top.jpg",
+			"sp3bot.jpg",
+			"sp3front.jpg",
+			"sp3back.jpg")) {
+			return false;
+		}
+
+		return true;
+
+	/*	m_pQuad = new Mesh();
 
 		if (!m_pQuad->LoadMesh("C://quad.obj")) {
 			return false;
@@ -158,11 +188,8 @@ public:
 
 		if (!m_pGroundTex->Load()) {
 			return false;
-		}
+		} */
 
-		m_pMesh = new Mesh();
-
-		return m_pMesh->LoadMesh("C://phoenix_ugv.md2"); 
 	}
 
 	void Run()
@@ -175,8 +202,25 @@ public:
 		pGameCamera->OnRender();
 		sc += 0.05f;
 
-		ShadowMapPass();
-		RenderPass();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		m_pLightingTechnique->Enable();
+
+		Pipeline p;
+		p.Scale(0.1f, 0.1f, 0.1f);
+		p.Rotate(0.0f, sc, 0.0f);
+		p.WorldPos(0.0f, -5.0f, 3.0f);
+		p.SetCamera(pGameCamera->GetPos(), pGameCamera->GetTarget(), pGameCamera->GetUp());
+		p.SetPerspectiveProj(m_persProjInfo);
+
+		m_pLightingTechnique->SetWVP(p.GetWVPTrans());
+		m_pLightingTechnique->SetWorldMatrix(p.GetWorldTrans());
+		m_pTankMesh->Render();
+
+		m_pSkyBox->Render();
+
+	//	ShadowMapPass();
+	//	RenderPass();
 
 		glutSwapBuffers();
 
@@ -307,7 +351,7 @@ public:
 //		glutSwapBuffers(); 
 	}
 
-	virtual void ShadowMapPass()
+/*	virtual void ShadowMapPass()
 	{
 		m_shadowMapFBO.BindForWriting();
 
@@ -359,7 +403,7 @@ public:
 		m_pLightingEffect->SetLightWVP(p.GetWVPTrans());
 
 		m_pMesh->Render();
-	}
+	} */
 
 	virtual void IdleCB()
 	{
@@ -454,13 +498,17 @@ private:
 	Camera* pGameCamera;
 	float sc;
 //	DirectionalLight directionalLight;
-	ShadowMapTechnique* m_pShadowMapEffect;
-	LightingTechnique* m_pLightingEffect;
-	SpotLight m_spotLight;
-	Mesh* m_pMesh;
-	Mesh* m_pQuad;
-	ShadowMapFBO m_shadowMapFBO;
-	Texture* m_pGroundTex;
+//	ShadowMapTechnique* m_pShadowMapEffect;
+	LightingTechnique* m_pLightingTechnique;
+//	SpotLight m_spotLight;
+//	Mesh* m_pMesh;
+//	Mesh* m_pQuad;
+//	ShadowMapFBO m_shadowMapFBO;
+//	Texture* m_pGroundTex;
+	DirectionalLight m_dirLight;
+	Mesh* m_pTankMesh;
+	SkyBox* m_pSkyBox;
+	PersProjInfo m_persProjInfo;
 };
 
 int main(int argc, char** argv)

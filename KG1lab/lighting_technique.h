@@ -75,19 +75,16 @@ public:
 
  //   void SetWVP(const Matrix4f* WVP);
     void SetWVP(const Matrix4f& WVP);
+    void SetLightWVP(const Matrix4f& LightWVP);
     void SetWorldMatrix(const Matrix4f& WVP);
     void SetTextureUnit(unsigned int TextureUnit);
+    void SetShadowMapTextureUnit(unsigned int TextureUnit);
     void SetDirectionalLight(const DirectionalLight& Light);
-
+    void SetPointLights(unsigned int NumLights, const PointLight* pLights);
+    void SetSpotLights(unsigned int NumLights, const SpotLight* pLights);
     void SetEyeWorldPos(const Vector3f& EyeWorldPos);
     void SetMatSpecularIntensity(float Intensity);
     void SetMatSpecularPower(float Power);
-
-    void SetPointLights(unsigned int NumLights, const PointLight* pLights);
-    void SetSpotLights(unsigned int NumLights, const SpotLight* pLights);
-
-    void SetShadowMapTextureUnit(unsigned int TextureUnit);
-    void SetLightWVP(const Matrix4f& LightWVP);
 
 private:
     GLuint m_WVPLocation;
