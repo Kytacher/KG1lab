@@ -10,6 +10,7 @@
 #include "glut_backend.h"
 #include "mesh.h"
 #include "skybox.h"
+#include "engine_common.h"
 
 #define ToRadian(x) ((x) * M_PI / 180.0f)
 #define ToDegree(x) ((x) * 180.0f / M_PI)
@@ -42,51 +43,61 @@ public:
 	{
 		pGameCamera = NULL;
 		m_pLightingTechnique = NULL;
-		m_pTankMesh = NULL;
-		m_pSkyBox = NULL;
-	//	pTexture = NULL;
+	//	m_pTankMesh = NULL;        ///////
+	//	m_pSkyBox = NULL;      /////////
 	//	pEffect = NULL;
 		sc = 0.0f;
+		m_pSphereMesh = NULL;
+		m_pTexture = NULL;
+		m_pNormalMap = NULL;
+		m_pTrivialNormalMap = NULL;
 
-	//	m_pMesh = NULL;
-	//	m_pQuad = NULL;
-	//	m_pGroundTex = NULL;
-	//	m_pShadowMapEffect = NULL;
+	//	m_pMesh = NULL;          
+	//	m_pQuad = NULL;              
+	//	m_pGroundTex = NULL;        
+	//	m_pShadowMapEffect = NULL;         
 	/*	directionalLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
 		directionalLight.AmbientIntensity = 0.5f;
 		directionalLight.DiffuseIntensity = 0.75f;
 		directionalLight.Direction = Vector3f(1.0f, 0.0, 0.0); */
-	/*	m_spotLight.AmbientIntensity = 0.0f;
-		m_spotLight.DiffuseIntensity = 0.9f;
-		m_spotLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
-		m_spotLight.Attenuation.Linear = 0.01f;
-		m_spotLight.Position = Vector3f(-20.0, 20.0, 5.0f);
-		m_spotLight.Direction = Vector3f(1.0f, -1.0f, 0.0f);
-		m_spotLight.Cutoff = 20.0f; */
+	/*	m_spotLight.AmbientIntensity = 0.0f;      /////
+		m_spotLight.DiffuseIntensity = 0.9f;      ///////
+		m_spotLight.Color = Vector3f(1.0f, 1.0f, 1.0f);     ///////
+		m_spotLight.Attenuation.Linear = 0.01f;             ///////
+		m_spotLight.Position = Vector3f(-20.0, 20.0, 5.0f);      ////
+		m_spotLight.Direction = Vector3f(1.0f, -1.0f, 0.0f);         ///////
+		m_spotLight.Cutoff = 20.0f; */           ///////
 
 		m_dirLight.AmbientIntensity = 0.2f;
 		m_dirLight.DiffuseIntensity = 0.8f;
 		m_dirLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
-		m_dirLight.Direction = Vector3f(1.0f, -1.0f, 0.0f);
+		m_dirLight.Direction = Vector3f(1.0f, 0.0f, 0.0f);
 
 		m_persProjInfo.FOV = 60.0f;
 		m_persProjInfo.Height = WINDOW_HEIGHT;
 		m_persProjInfo.Width = WINDOW_WIDTH;
 		m_persProjInfo.zNear = 1.0f;
 		m_persProjInfo.zFar = 100.0f;
+
+		m_bumpMapEnabled = true;
 	}
 
 	~Main()
 	{
 	//	SAFE_DELETE(pEffect);
 	//	SAFE_DELETE(m_pShadowMapEffect);
-	//	SAFE_DELETE(pGameCamera);
+		SAFE_DELETE(pGameCamera);
 	//	SAFE_DELETE(m_pMesh);
 	//	SAFE_DELETE(m_pQuad);
 	//	SAFE_DELETE(m_pGroundTex);
 		SAFE_DELETE(m_pLightingTechnique);
-		SAFE_DELETE(m_pTankMesh);
-		SAFE_DELETE(m_pSkyBox);
+	//	SAFE_DELETE(m_pTankMesh);    ///////
+	//	SAFE_DELETE(m_pSkyBox);       /////////
+
+		SAFE_DELETE(m_pSphereMesh);
+		SAFE_DELETE(m_pTexture);
+		SAFE_DELETE(m_pNormalMap);
+		SAFE_DELETE(m_pTrivialNormalMap);
 	}
 
 	bool Init()
@@ -123,9 +134,9 @@ public:
 
 		return true; */
 
-		Vector3f Pos(3.0f, 8.0f, -10.0f);
-		Vector3f Target(0.0f, -0.2f, 1.0f);
-		Vector3f Up(0.0, 1.0f, 0.0f);
+		Vector3f Pos(0.5f, 1.025f, 0.25f);       // Vector3f Pos(0.0f, 1.0f, -20.0f);
+		Vector3f Target(0.0f, -0.5f, 1.0f);    /// Vector3f Target(0.0f, 0.0f, 1.0f);
+		Vector3f Up(0.0, 1.0f, 0.0f);        ///   Vector3f Up(0.0, 1.0f, 0.0f);
 
 /*		if (!m_shadowMapFBO.Init(WINDOW_WIDTH, WINDOW_HEIGHT)) {
 			return false;
@@ -142,7 +153,36 @@ public:
 
 		m_pLightingTechnique->Enable();
 		m_pLightingTechnique->SetDirectionalLight(m_dirLight);
-		m_pLightingTechnique->SetTextureUnit(0);
+		m_pLightingTechnique->SetColorTextureUnit(0);
+		m_pLightingTechnique->SetNormalMapTextureUnit(2);         /////////////////////////////////////
+
+		m_pSphereMesh = new Mesh();                                                      /////
+
+		if (!m_pSphereMesh->LoadMesh("C://box.obj")) {
+			return false;
+		}
+
+		m_pTexture = new Texture(GL_TEXTURE_2D, "C://bricks.jpg");              ////////
+
+		if (!m_pTexture->Load()) {
+			return false;
+		}
+
+		m_pTexture->Bind(COLOR_TEXTURE_UNIT);
+		 
+		m_pNormalMap = new Texture(GL_TEXTURE_2D, "C://normal_map.jpg");          /////////
+
+		if (!m_pNormalMap->Load()) {
+			return false;
+		}
+
+		m_pTrivialNormalMap = new Texture(GL_TEXTURE_2D, "C://normal_up.jpg");      ////////
+
+		if (!m_pTrivialNormalMap->Load()) {
+			return false;
+		}
+
+		return true;
 
 /*		pEffect = new LightingTechnique();
 
@@ -158,7 +198,7 @@ public:
 			return false;
 		}  */
 
-		m_pTankMesh = new Mesh();
+		/*m_pTankMesh = new Mesh();            ///////////////////////////////////////////////////////////////////////////
 
 		if (!m_pTankMesh->LoadMesh("C://phoenix_ugv.md2")) {
 			return false;
@@ -174,7 +214,7 @@ public:
 			"sp3front.jpg",
 			"sp3back.jpg")) {
 			return false;
-		}
+		} */
 
 		return true;
 
@@ -200,6 +240,42 @@ public:
 	virtual void RenderSceneCB()
 	{
 		pGameCamera->OnRender();
+		sc += 0.01f;
+
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		m_pLightingTechnique->Enable();
+
+		Pipeline p;
+		p.Rotate(0.0f, sc, 0.0f);
+		p.WorldPos(0.0f, 0.0f, 3.0f);
+		p.SetCamera(pGameCamera->GetPos(), pGameCamera->GetTarget(), pGameCamera->GetUp());
+		p.SetPerspectiveProj(m_persProjInfo);
+
+		m_pTexture->Bind(COLOR_TEXTURE_UNIT);
+
+		if (m_bumpMapEnabled)
+		{
+			m_pNormalMap->Bind(NORMAL_TEXTURE_UNIT);
+		}
+		else
+		{
+			m_pTrivialNormalMap->Bind(NORMAL_TEXTURE_UNIT);
+		}
+
+		m_pLightingTechnique->SetWVP(p.GetWVPTrans());
+		m_pLightingTechnique->SetWorldMatrix(p.GetWorldTrans());
+		m_pSphereMesh->Render();
+
+		glutSwapBuffers();
+
+
+
+
+
+
+
+	/**	pGameCamera->OnRender();
 		sc += 0.05f;
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -222,7 +298,18 @@ public:
 	//	ShadowMapPass();
 	//	RenderPass();
 
-		glutSwapBuffers();
+		glutSwapBuffers(); */
+
+
+
+
+
+
+
+
+
+
+
 
 
 //		pGameCamera->OnRender();
@@ -422,6 +509,10 @@ public:
 			glutLeaveMainLoop();
 			break;
 
+		case 'b':     ////////////////////////////
+			m_bumpMapEnabled = !m_bumpMapEnabled;
+			break;
+
 	/*	case 'a':
 			directionalLight.AmbientIntensity += 0.05f;
 			break;
@@ -495,7 +586,7 @@ private:
 //	GLuint IBO;
 //	LightingTechnique* pEffect;
 //	Texture* pTexture;
-	Camera* pGameCamera;
+    Camera* pGameCamera;
 	float sc;
 //	DirectionalLight directionalLight;
 //	ShadowMapTechnique* m_pShadowMapEffect;
@@ -505,10 +596,19 @@ private:
 //	Mesh* m_pQuad;
 //	ShadowMapFBO m_shadowMapFBO;
 //	Texture* m_pGroundTex;
+            //           	DirectionalLight m_dirLight;
+            //        	Mesh* m_pTankMesh;
+	        //            SkyBox* m_pSkyBox;
+	        //           PersProjInfo m_persProjInfo;
+
+
 	DirectionalLight m_dirLight;
-	Mesh* m_pTankMesh;
-	SkyBox* m_pSkyBox;
+	Mesh* m_pSphereMesh;
+	Texture* m_pTexture;
+	Texture* m_pNormalMap;
+	Texture* m_pTrivialNormalMap;
 	PersProjInfo m_persProjInfo;
+	bool m_bumpMapEnabled;
 };
 
 int main(int argc, char** argv)

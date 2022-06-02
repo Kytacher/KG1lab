@@ -77,7 +77,7 @@ public:
     void SetWVP(const Matrix4f& WVP);
     void SetLightWVP(const Matrix4f& LightWVP);
     void SetWorldMatrix(const Matrix4f& WVP);
-    void SetTextureUnit(unsigned int TextureUnit);
+ //                                   void SetTextureUnit(unsigned int TextureUnit);
     void SetShadowMapTextureUnit(unsigned int TextureUnit);
     void SetDirectionalLight(const DirectionalLight& Light);
     void SetPointLights(unsigned int NumLights, const PointLight* pLights);
@@ -86,9 +86,12 @@ public:
     void SetMatSpecularIntensity(float Intensity);
     void SetMatSpecularPower(float Power);
 
+    void SetColorTextureUnit(unsigned int TextureUnit);
+    void SetNormalMapTextureUnit(unsigned int TextureUnit);
+
 private:
     GLuint m_WVPLocation;
-    GLuint m_samplerLocation;
+ //                                                              GLuint m_samplerLocation;
     GLuint m_WorldMatrixLocation;
  //   GLuint m_dirLightColorLocation;
  //   GLuint m_dirLightAmbientIntensityLocation;
@@ -99,6 +102,10 @@ private:
     GLuint m_numSpotLightsLocation;
     GLuint m_LightWVPLocation;
     GLuint m_shadowMapLocation;
+
+    GLuint m_colorMapLocation;           /////////
+    GLuint m_normalMapLocation;             /////////
+
     struct {
         GLuint Color;
         GLuint AmbientIntensity;

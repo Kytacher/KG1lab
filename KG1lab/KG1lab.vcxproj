@@ -154,6 +154,7 @@
     <ClCompile Include="callbacks.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="cubemap_texture.cpp" />
+    <ClCompile Include="engine_common.cpp" />
     <ClCompile Include="glut_backend.cpp" />
     <ClCompile Include="KG1lab.cpp" />
     <ClCompile Include="lighting_technique.cpp" />
@@ -172,6 +173,7 @@
     <ClInclude Include="callbacks.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="cubemap_texture.h" />
+    <ClInclude Include="engine_common.h" />
     <ClInclude Include="glut_backend.h" />
     <ClInclude Include="lighting_technique.h" />
     <ClInclude Include="math_3d.h" />

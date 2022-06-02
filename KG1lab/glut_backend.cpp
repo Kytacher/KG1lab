@@ -58,6 +58,8 @@ bool GLUTBackendCreateWindow(unsigned int Width, unsigned int Height, unsigned i
         return false;
     }
 
+    glutSetCursor(GLUT_CURSOR_NONE);     ////////////
+
     return true;
 }
 
