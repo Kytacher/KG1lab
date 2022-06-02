@@ -86,6 +86,9 @@ public:
     void SetPointLights(unsigned int NumLights, const PointLight* pLights);
     void SetSpotLights(unsigned int NumLights, const SpotLight* pLights);
 
+    void SetShadowMapTextureUnit(unsigned int TextureUnit);
+    void SetLightWVP(const Matrix4f& LightWVP);
+
 private:
     GLuint m_WVPLocation;
     GLuint m_samplerLocation;
@@ -97,6 +100,8 @@ private:
     GLuint m_matSpecularPowerLocation;
     GLuint m_numPointLightsLocation;
     GLuint m_numSpotLightsLocation;
+    GLuint m_LightWVPLocation;
+    GLuint m_shadowMapLocation;
     struct {
         GLuint Color;
         GLuint AmbientIntensity;

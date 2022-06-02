@@ -47,12 +47,13 @@ public:
 	{
 		pGameCamera = NULL;
 	//	pTexture = NULL;
-		pEffect = NULL;
+	//	pEffect = NULL;
 		sc = 0.0f;
 
 		m_pMesh = NULL;
 		m_pQuad = NULL;
-		m_pShadowMapTech = NULL;
+		m_pGroundTex = NULL;
+		m_pShadowMapEffect = NULL;
 	/*	directionalLight.Color = Vector3f(1.0f, 1.0f, 1.0f);
 		directionalLight.AmbientIntensity = 0.5f;
 		directionalLight.DiffuseIntensity = 0.75f;
@@ -68,11 +69,13 @@ public:
 
 	~Main()
 	{
-		SAFE_DELETE(pEffect);
-		SAFE_DELETE(m_pShadowMapTech);
+	//	SAFE_DELETE(pEffect);
+		SAFE_DELETE(m_pLightingEffect);
+		SAFE_DELETE(m_pShadowMapEffect);
 		SAFE_DELETE(pGameCamera);
 		SAFE_DELETE(m_pMesh);
 		SAFE_DELETE(m_pQuad);
+		SAFE_DELETE(m_pGroundTex);
 	}
 
 	bool Init()
@@ -108,31 +111,52 @@ public:
 		}
 
 		return true; */
+
+		Vector3f Pos(3.0f, 8.0f, -10.0f);
+		Vector3f Target(0.0f, -0.2f, 1.0f);
+		Vector3f Up(0.0, 1.0f, 0.0f);
+
 		if (!m_shadowMapFBO.Init(WINDOW_WIDTH, WINDOW_HEIGHT)) {
 			return false;
 		}
 
 		pGameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT);
 
-		pEffect = new LightingTechnique();
+		m_pLightingEffect = new LightingTechnique();
 
-		if (!pEffect->Init()) {
+		if (!m_pLightingEffect->Init()) {
 			printf("Error initializing the lighting technique\n");
 			return false;
 		}
 
-		m_pShadowMapTech = new ShadowMapTechnique();
+		m_pLightingEffect->Enable();
+		m_pLightingEffect->SetSpotLights(1, &m_spotLight);
+		m_pLightingEffect->SetTextureUnit(0);
+		m_pLightingEffect->SetShadowMapTextureUnit(1);
 
-		if (!m_pShadowMapTech->Init()) {
+/*		pEffect = new LightingTechnique();
+
+		if (!pEffect->Init()) {
+			printf("Error initializing the lighting technique\n");
+			return false;
+		} */
+
+		m_pShadowMapEffect = new ShadowMapTechnique();
+
+		if (!m_pShadowMapEffect->Init()) {
 			printf("Error initializing the shadow map technique\n");
 			return false;
-		}
-
-		m_pShadowMapTech->Enable();
+		} 
 
 		m_pQuad = new Mesh();
 
 		if (!m_pQuad->LoadMesh("C://quad.obj")) {
+			return false;
+		}
+
+		m_pGroundTex = new Texture(GL_TEXTURE_2D, "C://test.png");
+
+		if (!m_pGroundTex->Load()) {
 			return false;
 		}
 
@@ -289,13 +313,15 @@ public:
 
 		glClear(GL_DEPTH_BUFFER_BIT);
 
+		m_pShadowMapEffect->Enable();
+
 		Pipeline p;
-		p.Scale(0.2f, 0.2f, 0.2f);
+		p.Scale(0.1f, 0.1f, 0.1f);
 		p.Rotate(0.0f, sc, 0.0f);
 		p.WorldPos(0.0f, 0.0f, 5.0f);
 		p.SetCamera(m_spotLight.Position, m_spotLight.Direction, Vector3f(0.0f, 1.0f, 0.0f));
 		p.SetPerspectiveProj(60.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 50.0f);
-		m_pShadowMapTech->SetWVP(p.GetWVPTrans());
+		m_pShadowMapEffect->SetWVP(p.GetWVPTrans());
 		m_pMesh->Render();
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -305,16 +331,34 @@ public:
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		m_pShadowMapTech->SetTextureUnit(0);
+		m_pLightingEffect->Enable();
 		m_shadowMapFBO.BindForReading(GL_TEXTURE0);
 
 		Pipeline p;
-		p.Scale(5.0f, 5.0f, 5.0f);
-		p.WorldPos(0.0f, 0.0f, 10.0f);
+		p.Rotate(90.0f, 0.0f, 0.0f);
+		p.Scale(10.0f, 10.0f, 10.0f);
+		p.WorldPos(0.0f, 0.0f, 1.0f);
 		p.SetCamera(pGameCamera->GetPos(), pGameCamera->GetTarget(), pGameCamera->GetUp());
 		p.SetPerspectiveProj(60.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 50.0f);
-		m_pShadowMapTech->SetWVP(p.GetWVPTrans());
+		
+		m_pLightingEffect->SetWVP(p.GetWVPTrans());
+		m_pLightingEffect->SetWorldMatrix(p.GetWorldTrans());
+		p.SetCamera(m_spotLight.Position, m_spotLight.Direction, Vector3f(0.0f, 1.0f, 0.0f));
+		m_pLightingEffect->SetLightWVP(p.GetWVPTrans());
+		m_pLightingEffect->SetEyeWorldPos(pGameCamera->GetPos());
+		m_pGroundTex->Bind(GL_TEXTURE0);
 		m_pQuad->Render();
+
+		p.Scale(0.1f, 0.1f, 0.1f);
+		p.Rotate(0.0f, sc, 0.0f);
+		p.WorldPos(0.0f, 0.0f, 3.0f);
+		p.SetCamera(pGameCamera->GetPos(), pGameCamera->GetTarget(), pGameCamera->GetUp());
+		m_pLightingEffect->SetWVP(p.GetWVPTrans());
+		m_pLightingEffect->SetWorldMatrix(p.GetWorldTrans());
+		p.SetCamera(m_spotLight.Position, m_spotLight.Direction, Vector3f(0.0f, 1.0f, 0.0f));
+		m_pLightingEffect->SetLightWVP(p.GetWVPTrans());
+
+		m_pMesh->Render();
 	}
 
 	virtual void IdleCB()
@@ -405,16 +449,18 @@ private:
 
 //	GLuint VBO;
 //	GLuint IBO;
-	LightingTechnique* pEffect;
+//	LightingTechnique* pEffect;
 //	Texture* pTexture;
 	Camera* pGameCamera;
 	float sc;
 //	DirectionalLight directionalLight;
-	ShadowMapTechnique* m_pShadowMapTech;
+	ShadowMapTechnique* m_pShadowMapEffect;
+	LightingTechnique* m_pLightingEffect;
 	SpotLight m_spotLight;
 	Mesh* m_pMesh;
 	Mesh* m_pQuad;
 	ShadowMapFBO m_shadowMapFBO;
+	Texture* m_pGroundTex;
 };
 
 int main(int argc, char** argv)
