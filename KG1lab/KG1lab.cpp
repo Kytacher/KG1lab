@@ -162,7 +162,7 @@ public:
 			return false;
 		}
 
-		m_pTexture = new Texture(GL_TEXTURE_2D, "C://bricks.jpg");              ////////
+		m_pTexture = new Texture(GL_TEXTURE_2D, "C://kir.jpg");              ////////
 
 		if (!m_pTexture->Load()) {
 			return false;
@@ -170,7 +170,7 @@ public:
 
 		m_pTexture->Bind(COLOR_TEXTURE_UNIT);
 		 
-		m_pNormalMap = new Texture(GL_TEXTURE_2D, "C://normal_map.jpg");          /////////
+		m_pNormalMap = new Texture(GL_TEXTURE_2D, "C://kir1.jpg");          /////////
 
 		if (!m_pNormalMap->Load()) {
 			return false;
